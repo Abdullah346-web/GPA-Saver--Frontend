@@ -2,6 +2,11 @@ import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { authAPI } from '../services/api'
 
+const navigateWithoutReload = (nextPath) => {
+  window.history.replaceState({}, '', nextPath)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
 function AdminLoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +30,7 @@ function AdminLoginScreen() {
 
       if (response.success) {
         login(response.user, response.token)
-        window.location.href = '/admin-dashboard'
+        navigateWithoutReload('/admin-dashboard')
       } else {
         setError(response.message || 'Login failed')
       }

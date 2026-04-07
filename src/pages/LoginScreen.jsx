@@ -2,6 +2,11 @@ import { useContext, useState } from 'react'
 import { authAPI } from '../services/api'
 import { AuthContext } from '../context/AuthContext'
 
+const navigateWithoutReload = (nextPath) => {
+  window.history.replaceState({}, '', nextPath)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
 function LoginScreen() {
   const { login } = useContext(AuthContext)
   const [username, setUsername] = useState('')
@@ -20,14 +25,14 @@ function LoginScreen() {
         const response = await authAPI.login('admin123@gmail.com', password)
         const { token, user } = response
         login(user, token)
-        window.location.href = '/admin-dashboard'
+        navigateWithoutReload('/admin-dashboard')
         return
       }
 
       const response = await authAPI.login(username, password)
       const { token, user } = response
       login(user, token)
-      window.location.href = '/user-dashboard'
+      navigateWithoutReload('/user-dashboard')
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.')
     } finally {
