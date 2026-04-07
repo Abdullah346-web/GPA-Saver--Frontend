@@ -1,15 +1,13 @@
 import { useContext, useEffect, useState } from 'react'
 import { jsPDF } from 'jspdf'
 import { AuthContext } from '../context/AuthContext'
-import { notesAPI, notificationAPI, resolveBackendFileUrl } from '../services/api'
+import { notesAPI, resolveBackendFileUrl } from '../services/api'
 
 function UserDashboard() {
   const { user, token, logout } = useContext(AuthContext)
   const [activeTab, setActiveTab] = useState('home')
   const [allNotes, setAllNotes] = useState([])
   const [myNotes, setMyNotes] = useState([])
-  const [notifications, setNotifications] = useState([])
-  const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [converting, setConverting] = useState(false)
   const [message, setMessage] = useState('')
@@ -28,7 +26,15 @@ function UserDashboard() {
     }
 
     loadNotes()
-  }, [user])
+
+    // Auto-refresh: poll notes every 4 seconds for live updates
+    const refreshInterval = setInterval(() => {
+      loadNotes()
+    }, 4000)
+
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval)
+  }, [user, token])
 
   useEffect(() => {
     return () => {
@@ -46,11 +52,6 @@ function UserDashboard() {
       if (token) {
         const myNotesData = await notesAPI.getUserNotes(token)
         setMyNotes(myNotesData.notes || [])
-
-        // Load notifications
-        const notificationsData = await notificationAPI.getNotifications(token)
-        setNotifications(notificationsData.notifications || [])
-        setUnreadCount(notificationsData.unreadCount || 0)
       }
     } catch (error) {
       console.error('Error loading notes:', error)
@@ -185,30 +186,12 @@ function UserDashboard() {
   const handleDeleteNote = async (noteId) => {
     if (confirm('Delete this note?')) {
       try {
-        await notesAPI.deleteNote(noteId, token, '')
+        await notesAPI.deleteNote(noteId, token)
         loadNotes()
         setMessage('Note deleted successfully')
       } catch (error) {
         setMessage('Error: ' + (error.message || 'Failed to delete note'))
       }
-    }
-  }
-
-  const handleNotificationRead = async (notificationId) => {
-    try {
-      await notificationAPI.markAsRead(notificationId, token)
-      loadNotes() // Refresh notifications
-    } catch (error) {
-      console.error('Error marking notification as read:', error)
-    }
-  }
-
-  const handleDeleteNotification = async (notificationId) => {
-    try {
-      await notificationAPI.deleteNotification(notificationId, token)
-      loadNotes() // Refresh notifications
-    } catch (error) {
-      console.error('Error deleting notification:', error)
     }
   }
 
@@ -239,12 +222,6 @@ function UserDashboard() {
               onClick={() => setActiveTab('mynotes')}
             >
               My Uploads
-            </button>
-            <button
-              className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
-              onClick={() => setActiveTab('notifications')}
-            >
-              Notifications {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
             </button>
           </nav>
 
@@ -416,56 +393,6 @@ function UserDashboard() {
                 ))}
               </div>
               {myNotes.length === 0 && <p>No notes uploaded yet</p>}
-            </section>
-          )}
-
-          {activeTab === 'notifications' && (
-            <section className="tab-content">
-              <h1>Notifications</h1>
-              {message && <div className="message">{message}</div>}
-              <div className="notifications-list">
-                {notifications.length === 0 ? (
-                  <p>No notifications yet</p>
-                ) : (
-                  notifications.map((notif) => (
-                    <div
-                      key={notif._id}
-                      className={`notification-item ${notif.type} ${
-                        !notif.isRead ? 'unread' : ''
-                      }`}
-                    >
-                      <div className="notification-header">
-                        <h3>{notif.title}</h3>
-                        <span className="notification-date">
-                          {new Date(notif.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="notification-message">{notif.message}</p>
-                      {notif.reason && (
-                        <p className="notification-reason">
-                          <strong>Reason:</strong> {notif.reason}
-                        </p>
-                      )}
-                      <div className="notification-actions">
-                        {!notif.isRead && (
-                          <button
-                            className="mark-read-btn"
-                            onClick={() => handleNotificationRead(notif._id)}
-                          >
-                            Mark as Read
-                          </button>
-                        )}
-                        <button
-                          className="delete-btn"
-                          onClick={() => handleDeleteNotification(notif._id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
             </section>
           )}
         </div>

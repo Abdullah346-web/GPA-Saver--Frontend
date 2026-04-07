@@ -280,9 +280,11 @@
 .login-field {
   display: grid;
   gap: 8px;
+  width: 100%;
 }
 
 .login-input {
+  width: 100%;
   padding: 15px 18px;
   border-radius: 18px;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -811,46 +813,6 @@ tr:hover {
   border-left: 4px solid #ef4444;
 }
 
-.session-alert {
-  padding: 16px;
-  background: rgba(79, 172, 254, 0.15);
-  border: 1px solid rgba(96, 165, 250, 0.4);
-  border-radius: 10px;
-  color: rgba(226, 232, 240, 0.9);
-  margin: 16px 0;
-  border-left: 4px solid rgba(96, 165, 250, 0.8);
-}
-
-.session-alert p {
-  margin: 0 0 12px 0;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.clear-session-btn {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(56, 189, 248, 0.25);
-  color: rgba(96, 165, 250, 0.95);
-  border: 1px solid rgba(96, 165, 250, 0.6);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.clear-session-btn:hover:not(:disabled) {
-  background: rgba(56, 189, 248, 0.4);
-  color: #fff;
-  border-color: rgba(96, 165, 250, 0.8);
-}
-
-.clear-session-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .demo-creds {
   margin-top: 16px;
   padding: 12px;
@@ -858,109 +820,6 @@ tr:hover {
   border-radius: 8px;
   font-size: 0.85rem;
   color: rgba(226, 232, 240, 0.8);
-}
-
-/* NOTIFICATIONS STYLES */
-.notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.notification-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  transition: all 0.3s;
-}
-
-.notification-item.unread {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(96, 165, 250, 0.4);
-}
-
-.notification-item.note_deleted {
-  border-left: 4px solid rgba(239, 68, 68, 0.6);
-}
-
-.notification-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.notification-header h3 {
-  margin: 0;
-  color: #fff;
-  font-size: 1rem;
-}
-
-.notification-date {
-  font-size: 0.8rem;
-  color: rgba(226, 232, 240, 0.5);
-}
-
-.notification-message {
-  margin: 0 0 12px 0;
-  color: rgba(226, 232, 240, 0.85);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.notification-reason {
-  margin: 12px 0;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-left: 3px solid rgba(239, 68, 68, 0.5);
-  border-radius: 6px;
-  color: rgba(226, 232, 240, 0.8);
-  font-size: 0.9rem;
-}
-
-.notification-reason strong {
-  color: rgba(239, 68, 68, 0.8);
-}
-
-.notification-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.mark-read-btn {
-  padding: 8px 16px;
-  background: rgba(59, 130, 246, 0.2);
-  color: rgba(96, 165, 250, 0.9);
-  border: 1px solid rgba(96, 165, 250, 0.4);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.mark-read-btn:hover {
-  background: rgba(59, 130, 246, 0.35);
-  color: #fff;
-}
-
-.notification-actions .delete-btn {
-  padding: 8px 16px;
-  flex: 0;
-}
-
-.badge {
-  display: inline-block;
-  background: rgba(239, 68, 68, 0.8);
-  color: white;
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-left: 8px;
-  line-height: 1;
 }
 
 @media (max-width: 768px) {

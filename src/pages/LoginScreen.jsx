@@ -8,29 +8,11 @@ function LoginScreen() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showClearSessions, setShowClearSessions] = useState(false)
-
-  const handleClearSessions = async () => {
-    try {
-      setLoading(true)
-      // Get email or use username as identifier
-      const identifier = username === 'admin' ? 'admin123@gmail.com' : username
-      await authAPI.forceLogoutAll(identifier, password)
-      setError('')
-      setShowClearSessions(false)
-      alert('✅ All sessions cleared! You can now login.')
-    } catch (err) {
-      setError(err.message || 'Failed to clear sessions')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    setShowClearSessions(false)
 
     try {
       // Admin credentials check (for demo)
@@ -47,13 +29,7 @@ function LoginScreen() {
       login(user, token)
       window.location.href = '/user-dashboard'
     } catch (err) {
-      const errorMsg = err.message || 'Login failed. Please try again.'
-      setError(errorMsg)
-      
-      // Show clear sessions option if account is already in use
-      if (errorMsg.includes('already in use')) {
-        setShowClearSessions(true)
-      }
+      setError(err.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -93,25 +69,6 @@ function LoginScreen() {
           </div>
 
           {error && <p className="error-message">{error}</p>}
-
-          {showClearSessions && (
-            <div className="session-alert">
-              <p>
-                <strong>Stuck session?</strong> If you refreshed the page and can't login, click below to emergency clear all sessions. 
-              </p>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(226, 232, 240, 0.6)', margin: '8px 0 0 0' }}>
-                Note: One account can only be logged in from one device at a time.
-              </p>
-              <button
-                type="button"
-                className="clear-session-btn"
-                onClick={handleClearSessions}
-                disabled={loading}
-              >
-                {loading ? 'Clearing sessions...' : '🔓 Clear All Sessions'}
-              </button>
-            </div>
-          )}
 
           <button className="login-button" type="submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Continue'}

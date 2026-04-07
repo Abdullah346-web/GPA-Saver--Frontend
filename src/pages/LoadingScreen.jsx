@@ -61,8 +61,8 @@ function LoadingScreen({ onDone }) {
           src={logoImage} 
           alt="GPA Saver Logo" 
           style={{
-            width: '150px',
-            height: '150px',
+            width: '100px',
+            height: '100px',
             marginBottom: '24px',
           }}
         />

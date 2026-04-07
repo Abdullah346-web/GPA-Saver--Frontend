@@ -31,7 +31,7 @@ const apiCall = async (endpoint, method = 'GET', data = null, token = null) => {
     headers,
   }
 
-  if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE')) {
+  if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
     config.body = isFormData ? data : JSON.stringify(data)
   }
 
@@ -56,9 +56,6 @@ export const authAPI = {
   },
   logout: async (token) => {
     return apiCall('/auth/logout', 'POST', null, token)
-  },
-  forceLogoutAll: async (email, password) => {
-    return apiCall('/auth/force-logout-all', 'POST', { email, password })
   },
   register: async (name, username, password, email) => {
     return apiCall('/auth/register', 'POST', { name, username, password, email })
@@ -104,24 +101,8 @@ export const notesAPI = {
   uploadNote: async (noteData, token) => {
     return apiCall('/notes/upload', 'POST', noteData, token)
   },
-  deleteNote: async (noteId, token, reason = '') => {
-    return apiCall(`/notes/${noteId}`, 'DELETE', { reason }, token)
-  },
-}
-
-// Notifications API calls
-export const notificationAPI = {
-  getNotifications: async (token) => {
-    return apiCall('/notifications', 'GET', null, token)
-  },
-  markAsRead: async (notificationId, token) => {
-    return apiCall(`/notifications/${notificationId}/read`, 'PATCH', {}, token)
-  },
-  markAllAsRead: async (token) => {
-    return apiCall('/notifications/mark/all-read', 'PATCH', {}, token)
-  },
-  deleteNotification: async (notificationId, token) => {
-    return apiCall(`/notifications/${notificationId}`, 'DELETE', null, token)
+  deleteNote: async (noteId, token) => {
+    return apiCall(`/notes/${noteId}`, 'DELETE', null, token)
   },
 }
 

@@ -19,12 +19,13 @@ function AdminDashboard() {
 
     loadStats()
 
-    // Poll every 5 seconds to update online users
-    const interval = setInterval(() => {
+    // Auto-refresh: poll data every 4 seconds for live updates
+    const refreshInterval = setInterval(() => {
       loadStats()
-    }, 5000)
+    }, 4000)
 
-    return () => clearInterval(interval)
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval)
   }, [user])
 
   const loadStats = async () => {
@@ -95,20 +96,11 @@ function AdminDashboard() {
   }
 
   const handleDeleteNote = async (noteId) => {
-    const confirm_delete = confirm('Are you sure you want to delete this note?')
-    if (confirm_delete) {
-      const reason = prompt('Please provide a reason for deleting this note:')
-      if (reason === null) return // User cancelled
-
-      if (!reason || reason.trim().length === 0) {
-        setMessage('Error: Please provide a reason for deletion')
-        return
-      }
-
+    if (confirm('Are you sure you want to delete this note?')) {
       try {
-        await notesAPI.deleteNote(noteId, token, reason)
+        await notesAPI.deleteNote(noteId, token)
         loadStats()
-        setMessage('Note deleted successfully. User has been notified.')
+        setMessage('Note deleted successfully')
       } catch (error) {
         setMessage('Error: ' + (error.message || 'Failed to delete note'))
       }

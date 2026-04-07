@@ -1,58 +1,38 @@
-import { useContext, useState } from 'react'
+import { useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { authAPI } from '../services/api'
 
 function AdminLoginScreen() {
-  const { login } = useContext(AuthContext)
-  const [adminId, setAdminId] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showClearSessions, setShowClearSessions] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const { login } = useContext(AuthContext)
 
-  const handleClearSessions = async () => {
-    try {
-      setLoading(true)
-      const identifier = adminId === 'admin' ? 'admin123@gmail.com' : adminId
-      await authAPI.forceLogoutAll(identifier, password)
-      setError('')
-      setShowClearSessions(false)
-      alert('✅ All sessions cleared! You can now login.')
-    } catch (err) {
-      setError(err.message || 'Failed to clear sessions')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const handleLogin = async (e) => {
+    e.preventDefault()
     setError('')
-    setLoading(true)
-    setShowClearSessions(false)
+    setIsLoading(true)
 
     try {
-      const email = adminId === 'admin' ? 'admin123@gmail.com' : adminId
-      const response = await authAPI.login(email, password)
-      const { token, user } = response
-
-      if (!user || user.role !== 'admin') {
-        setError('This account does not have admin access.')
+      if (!email || !password) {
+        setError('Please enter both email and password')
+        setIsLoading(false)
         return
       }
 
-      login(user, token)
-      window.location.href = '/admin-dashboard'
-    } catch (err) {
-      const errorMsg = err.message || 'Admin login failed. Please try again.'
-      setError(errorMsg)
-      
-      // Show clear sessions option if account is already in use
-      if (errorMsg.includes('already in use')) {
-        setShowClearSessions(true)
+      const response = await authAPI.login(email, password)
+
+      if (response.success) {
+        login(response.user, response.token)
+        window.location.href = '/admin-dashboard'
+      } else {
+        setError(response.message || 'Login failed')
       }
+    } catch (err) {
+      setError(err.message || 'An error occurred during login')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -65,56 +45,48 @@ function AdminLoginScreen() {
           Sign in to manage users, moderate shared notes, and monitor platform activity.
         </p>
 
-        <form onSubmit={handleSubmit} className="login-fields" aria-label="Admin login form">
-          <div className="login-field">
-            <span>Admin email or username</span>
-            <input
-              type="text"
-              value={adminId}
-              onChange={(e) => setAdminId(e.target.value)}
-              placeholder="admin123@gmail.com or admin"
-              className="login-input"
-              required
-            />
-          </div>
-          <div className="login-field">
-            <span>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="login-input"
-              required
-            />
+        <form onSubmit={handleLogin}>
+          <div className="login-fields" aria-label="Admin login form">
+            <div className="login-field">
+              <span>Admin Email</span>
+              <input
+                type="email"
+                className="login-input"
+                placeholder="Enter admin email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
+            <div className="login-field">
+              <span>Password</span>
+              <input
+                type="password"
+                className="login-input"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                required
+              />
+            </div>
           </div>
 
-          {error && <p className="error-message">{error}</p>}
-
-          {showClearSessions && (
-            <div className="session-alert">
-              <p>
-                <strong>Stuck session?</strong> If you refreshed the page and can't login, click below to emergency clear all sessions.
-              </p>
-              <p style={{ fontSize: '0.85rem', color: 'rgba(226, 232, 240, 0.6)', margin: '8px 0 0 0' }}>
-                Note: One account can only be logged in from one device at a time.
-              </p>
-              <button
-                type="button"
-                className="clear-session-btn"
-                onClick={handleClearSessions}
-                disabled={loading}
-              >
-                {loading ? 'Clearing sessions...' : '🔓 Clear All Sessions'}
-              </button>
+          {error && (
+            <div className="error-message" style={{ color: '#ef4444', marginTop: '12px', fontSize: '14px' }}>
+              {error}
             </div>
           )}
 
-          <button className="login-button" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : 'Continue as Admin'}
+          <button 
+            className="login-button" 
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Logging in...' : 'Continue as Admin'}
           </button>
         </form>
-
       </section>
     </main>
   )
