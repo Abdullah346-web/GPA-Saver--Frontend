@@ -1,5 +1,5 @@
 // API service for backend communication
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '')
+const API_URL = (import.meta.env.VITE_API_URL || 'https://gpa-saver-backend-production.up.railway.app/api').replace(/\/$/, '')
 const API_BASE_URL = API_URL.replace(/\/api$/, '')
 
 export const resolveBackendFileUrl = (urlPath = '') => {
