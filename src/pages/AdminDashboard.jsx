@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
-import { userAPI, notesAPI } from '../services/api'
+import { userAPI, notesAPI, resolveBackendFileUrl } from '../services/api'
 
 function AdminDashboard() {
   const { user, token, logout } = useContext(AuthContext)
@@ -266,6 +266,14 @@ function AdminDashboard() {
                         <td>{note.uploadedByName || note.uploadedBy?.name || note.uploadedByUsername}</td>
                         <td>{new Date(note.createdAt).toLocaleDateString()}</td>
                         <td>
+                          <a
+                            href={resolveBackendFileUrl(note.pdfUrl)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="view-btn"
+                          >
+                            View
+                          </a>
                           <button className="delete-btn" onClick={() => handleDeleteNote(note._id)}>
                             Delete
                           </button>
