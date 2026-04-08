@@ -16,6 +16,7 @@ function UserDashboard() {
     title: '',
     subject: '',
     description: '',
+    directFile: null,
     imageFiles: [],
     convertedPdfFile: null,
   })
@@ -56,6 +57,18 @@ function UserDashboard() {
     } catch (error) {
       console.error('Error loading notes:', error)
     }
+  }
+
+  const getFileTypeLabel = (note) => {
+    const fileName = String(note?.pdfFileName || note?.pdfUrl || '').toLowerCase()
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : ''
+
+    if (extension === 'pdf') return 'PDF'
+    if (['doc', 'docx', 'docm', 'dot', 'dotx'].includes(extension)) return 'Word'
+    if (extension === 'rtf') return 'RTF'
+    if (extension === 'odt') return 'ODT'
+
+    return extension ? extension.toUpperCase() : 'File'
   }
 
   const readImageAsDataUrl = (file) =>
@@ -161,16 +174,25 @@ function UserDashboard() {
       formData.append('title', uploadForm.title)
       formData.append('subject', uploadForm.subject)
       formData.append('description', uploadForm.description)
-      formData.append('pageCount', String(uploadForm.imageFiles.length || 1))
+      const selectedFile = uploadForm.directFile || uploadForm.convertedPdfFile
+      const pageCount = uploadForm.convertedPdfFile ? uploadForm.imageFiles.length || 1 : 1
+      formData.append('pageCount', String(pageCount))
 
-      if (!uploadForm.convertedPdfFile) {
-        throw new Error('Please convert selected images to PDF first')
+      if (!selectedFile) {
+        throw new Error('Please select a PDF/Word file or convert images to PDF first')
       }
-      formData.append('pdfFile', uploadForm.convertedPdfFile)
+      formData.append('pdfFile', selectedFile)
 
       await notesAPI.uploadNote(formData, token)
       setMessage('Note uploaded successfully!')
-      setUploadForm({ title: '', subject: '', description: '', imageFiles: [], convertedPdfFile: null })
+      setUploadForm({
+        title: '',
+        subject: '',
+        description: '',
+        directFile: null,
+        imageFiles: [],
+        convertedPdfFile: null,
+      })
       if (pdfPreviewUrl) {
         URL.revokeObjectURL(pdfPreviewUrl)
       }
@@ -254,6 +276,7 @@ function UserDashboard() {
                   {allNotes.map((note) => (
                     <div key={note._id} className="note-card">
                       <h3>{note.title}</h3>
+                      <span className="file-type-badge">{getFileTypeLabel(note)}</span>
                       <p className="note-subject">Subject: {note.subject}</p>
                       <p className="note-desc">{note.description}</p>
                       <p className="note-meta">
@@ -317,6 +340,27 @@ function UserDashboard() {
                   />
                 </div>
                 <div className="form-group">
+                  <label>Select PDF or Word File (Direct Upload)</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.docm,.dot,.dotx,.rtf,.odt"
+                    onChange={(e) => {
+                      const file = (e.target.files || [])[0] || null
+                      if (pdfPreviewUrl) {
+                        URL.revokeObjectURL(pdfPreviewUrl)
+                      }
+                      setPdfPreviewUrl('')
+                      setUploadForm({
+                        ...uploadForm,
+                        directFile: file,
+                        imageFiles: [],
+                        convertedPdfFile: null,
+                      })
+                    }}
+                  />
+                  <small className="field-helper">You can directly upload PDF or Word files.</small>
+                </div>
+                <div className="form-group">
                   <label>Select Images</label>
                   <input
                     type="file"
@@ -328,18 +372,27 @@ function UserDashboard() {
                         URL.revokeObjectURL(pdfPreviewUrl)
                       }
                       setPdfPreviewUrl('')
-                      setUploadForm({ ...uploadForm, imageFiles: files, convertedPdfFile: null })
+                      setUploadForm({
+                        ...uploadForm,
+                        directFile: null,
+                        imageFiles: files,
+                        convertedPdfFile: null,
+                      })
                     }}
-                    required
                   />
                   <small className="field-helper">
-                    Pick one or more images, click Convert to PDF, then Turn In.
+                    Optional: pick images, click Convert to PDF, then Turn In.
                   </small>
                 </div>
                 <button
                   type="button"
                   className="submit-btn secondary-btn"
-                  disabled={converting || loading || uploadForm.imageFiles.length === 0}
+                  disabled={
+                    converting ||
+                    loading ||
+                    uploadForm.directFile !== null ||
+                    uploadForm.imageFiles.length === 0
+                  }
                   onClick={handleConvertToPdf}
                 >
                   {converting ? 'Converting...' : 'Convert to PDF'}
@@ -365,6 +418,7 @@ function UserDashboard() {
                 {myNotes.map((note) => (
                   <div key={note._id} className="note-card my-note">
                     <h3>{note.title}</h3>
+                      <span className="file-type-badge">{getFileTypeLabel(note)}</span>
                     <p className="note-subject">Subject: {note.subject}</p>
                     <p className="note-desc">{note.description}</p>
                     <p className="note-meta">

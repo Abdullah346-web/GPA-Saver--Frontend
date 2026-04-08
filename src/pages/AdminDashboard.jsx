@@ -12,6 +12,18 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
+  const getFileTypeLabel = (note) => {
+    const fileName = String(note?.pdfFileName || note?.pdfUrl || '').toLowerCase()
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : ''
+
+    if (extension === 'pdf') return 'PDF'
+    if (['doc', 'docx', 'docm', 'dot', 'dotx'].includes(extension)) return 'Word'
+    if (extension === 'rtf') return 'RTF'
+    if (extension === 'odt') return 'ODT'
+
+    return extension ? extension.toUpperCase() : 'File'
+  }
+
   useEffect(() => {
     if (!user || user.role !== 'admin') {
       window.location.href = '/login'
@@ -252,6 +264,7 @@ function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Title</th>
+                      <th>File Type</th>
                       <th>Subject</th>
                       <th>Shared By</th>
                       <th>Date</th>
@@ -262,6 +275,9 @@ function AdminDashboard() {
                     {notes.map((note) => (
                       <tr key={note._id}>
                         <td>{note.title}</td>
+                        <td>
+                          <span className="file-type-badge">{getFileTypeLabel(note)}</span>
+                        </td>
                         <td>{note.subject}</td>
                         <td>{note.uploadedByName || note.uploadedBy?.name || note.uploadedByUsername}</td>
                         <td>{new Date(note.createdAt).toLocaleDateString()}</td>
