@@ -1,5 +1,5 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react'
-import { authAPI } from '../services/api'
+import { API_URL, authAPI } from '../services/api'
 
 export const AuthContext = createContext()
 
@@ -49,6 +49,57 @@ export const AuthProvider = ({ children }) => {
 
     clearAuthState()
   }, [clearAuthState])
+
+  useEffect(() => {
+    if (!token) {
+      return undefined
+    }
+
+    const heartbeatInterval = setInterval(() => {
+      authAPI.heartbeat(token).catch(() => {
+        // Ignore transient network failures; stale-user cleanup handles long disconnects.
+      })
+    }, 30000)
+
+    return () => {
+      clearInterval(heartbeatInterval)
+    }
+  }, [token])
+
+  useEffect(() => {
+    const sendLeaveSignal = () => {
+      const currentToken = localStorage.getItem('token')
+      if (!currentToken) {
+        return
+      }
+
+      const payload = JSON.stringify({ token: currentToken })
+      const leaveUrl = `${API_URL}/auth/leave`
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'application/json' })
+        navigator.sendBeacon(leaveUrl, blob)
+        return
+      }
+
+      fetch(leaveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {
+        // Best-effort signal.
+      })
+    }
+
+    window.addEventListener('pagehide', sendLeaveSignal)
+
+    return () => {
+      window.removeEventListener('pagehide', sendLeaveSignal)
+    }
+  }, [])
 
   useEffect(() => {
     const handleForceLogout = () => {

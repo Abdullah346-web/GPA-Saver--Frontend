@@ -16,7 +16,7 @@ const normalizeApiUrl = (rawUrl) => {
     : `${withoutTrailingSlash}/api`
 }
 
-const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL)
+export const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL)
 const API_BASE_URL = API_URL.replace(/\/api$/, '')
 export const FORCED_LOGOUT_MESSAGE_KEY = 'auth_force_logout_message'
 
@@ -118,6 +118,12 @@ export const authAPI = {
   },
   logout: async (token) => {
     return apiCall('/auth/logout', 'POST', null, token)
+  },
+  heartbeat: async (token) => {
+    return apiCall('/auth/heartbeat', 'POST', null, token)
+  },
+  leave: async (token) => {
+    return apiCall('/auth/leave', 'POST', { token })
   },
   register: async (name, username, password, email) => {
     return apiCall('/auth/register', 'POST', { name, username, password, email })
