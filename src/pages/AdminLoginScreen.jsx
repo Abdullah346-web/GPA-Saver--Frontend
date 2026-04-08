@@ -1,6 +1,6 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { AuthContext } from '../context/AuthContext'
-import { authAPI } from '../services/api'
+import { authAPI, FORCED_LOGOUT_MESSAGE_KEY } from '../services/api'
 
 const navigateWithoutReload = (nextPath) => {
   window.history.replaceState({}, '', nextPath)
@@ -11,12 +11,22 @@ function AdminLoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [forcedLogoutMessage, setForcedLogoutMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useContext(AuthContext)
+
+  useEffect(() => {
+    const forcedMessage = localStorage.getItem(FORCED_LOGOUT_MESSAGE_KEY)
+    if (forcedMessage) {
+      setForcedLogoutMessage(forcedMessage)
+      localStorage.removeItem(FORCED_LOGOUT_MESSAGE_KEY)
+    }
+  }, [])
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    setForcedLogoutMessage('')
     setIsLoading(true)
 
     try {
@@ -49,6 +59,12 @@ function AdminLoginScreen() {
         <p className="login-copy">
           Sign in to manage users, moderate shared notes, and monitor platform activity.
         </p>
+
+        {forcedLogoutMessage && (
+          <div className="error-message" style={{ marginTop: '12px' }}>
+            {forcedLogoutMessage}
+          </div>
+        )}
 
         <form onSubmit={handleLogin}>
           <div className="login-fields" aria-label="Admin login form">

@@ -1,5 +1,5 @@
-import { useContext, useState } from 'react'
-import { authAPI } from '../services/api'
+import { useContext, useEffect, useState } from 'react'
+import { authAPI, FORCED_LOGOUT_MESSAGE_KEY } from '../services/api'
 import { AuthContext } from '../context/AuthContext'
 
 const navigateWithoutReload = (nextPath) => {
@@ -12,11 +12,21 @@ function LoginScreen() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [forcedLogoutMessage, setForcedLogoutMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const forcedMessage = localStorage.getItem(FORCED_LOGOUT_MESSAGE_KEY)
+    if (forcedMessage) {
+      setForcedLogoutMessage(forcedMessage)
+      localStorage.removeItem(FORCED_LOGOUT_MESSAGE_KEY)
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setForcedLogoutMessage('')
     setLoading(true)
 
     try {
@@ -48,6 +58,8 @@ function LoginScreen() {
         <p className="login-copy">
           Access shared notes from one place and continue to the community notes library.
         </p>
+
+        {forcedLogoutMessage && <p className="error-message">{forcedLogoutMessage}</p>}
 
         <form onSubmit={handleSubmit} className="login-fields">
           <div className="login-field">

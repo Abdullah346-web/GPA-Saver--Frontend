@@ -18,6 +18,33 @@ const normalizeApiUrl = (rawUrl) => {
 
 const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL)
 const API_BASE_URL = API_URL.replace(/\/api$/, '')
+export const FORCED_LOGOUT_MESSAGE_KEY = 'auth_force_logout_message'
+
+const triggerForcedLogout = (message) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  localStorage.setItem(
+    FORCED_LOGOUT_MESSAGE_KEY,
+    message || 'You have been logged out because this account was used on another device.'
+  )
+
+  window.dispatchEvent(
+    new CustomEvent('auth:force-logout', {
+      detail: {
+        message:
+          message || 'You have been logged out because this account was used on another device.',
+      },
+    })
+  )
+
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+}
 
 export const resolveBackendFileUrl = (urlPath = '') => {
   if (!urlPath) {
@@ -61,6 +88,12 @@ const apiCall = async (endpoint, method = 'GET', data = null, token = null) => {
 
   if (!response.ok) {
     if (isJson) {
+      // Single-device login support: when backend rejects a stale token,
+      // clear local auth immediately so the previous device is logged out.
+      if (response.status === 401 && token) {
+        triggerForcedLogout(result.message)
+      }
+
       throw new Error(result.message || 'API Error')
     }
 

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react'
+import React, { createContext, useState, useCallback, useEffect } from 'react'
 import { authAPI } from '../services/api'
 
 export const AuthContext = createContext()
@@ -22,6 +22,13 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(false)
 
+  const clearAuthState = useCallback(() => {
+    setUser(null)
+    setToken(null)
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }, [])
+
   const login = useCallback((userData, authToken) => {
     setUser(userData)
     setToken(authToken)
@@ -40,11 +47,20 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    setUser(null)
-    setToken(null)
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-  }, [])
+    clearAuthState()
+  }, [clearAuthState])
+
+  useEffect(() => {
+    const handleForceLogout = () => {
+      clearAuthState()
+    }
+
+    window.addEventListener('auth:force-logout', handleForceLogout)
+
+    return () => {
+      window.removeEventListener('auth:force-logout', handleForceLogout)
+    }
+  }, [clearAuthState])
 
   const value = {
     user,
