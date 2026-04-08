@@ -3,6 +3,14 @@ const normalizeApiUrl = (rawUrl) => {
   const trimmed = String(rawUrl || '').trim()
 
   if (!trimmed) {
+    if (typeof window !== 'undefined') {
+      const { hostname, protocol } = window.location
+
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return '/api'
+      }
+    }
+
     return 'https://gpa-saver-backend-production.up.railway.app/api'
   }
 
